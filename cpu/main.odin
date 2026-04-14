@@ -1,32 +1,27 @@
-package frontend
+package cpu
 
+import "core:sys/windows"
 import "core:fmt"
+import "core:slice"
+import "core:os"
 
-Instr_Type :: enum {
+main :: proc() {
+	data := os.read_entire_file("out/tests/instr_decode.bin", context.temp_allocator) or_else panic("failed to read file")
+	fmt.printf("%v\n", data)
 	
-}
-
-InstrI :: bit_field u32 {
-  imm: u16   | 16,
-  rt:  u8    | 5,
-  rs:  u8    | 5,
-  opc: u8    | 6
-}
-
-InstrJ :: bit_field u32 {
-  imm: u32   | 26,
-  opc: u8    | 6
-}
-
-InstrR :: bit_field u32 {
-  funct: u8 | 6,
-  sa: u8    | 5,
-  rd: u8    | 5,
-  rt: u8    | 5,
-  rs: u8    | 5,
-  op: u8    | 6,
-}
-
-Instr_Desc :: struct {
+	data_u32 := slice.reinterpret([]u32be, data)
+	fmt.printf("%v\n", data_u32)
 	
+	fmt.printf("Decoded: %v\n", instr_decode(transmute(u32be)data_u32[0]))
+	
+	block := jit_alloc_block(4096)
+	block.memory[0] = 0xB8
+	block.memory[1] = 0x11
+	block.memory[2] = 0x22
+	block.memory[3] = 0x33
+	block.memory[4] = 0x44
+	block.memory[5] = 0xC3
+	
+	result := jit_block_execute(&block, 0)
+	fmt.printf("Block exec result: %x\n", result)
 }
