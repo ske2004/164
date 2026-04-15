@@ -1,6 +1,5 @@
 package cpu
 
-import "core:sys/windows"
 import "core:fmt"
 import "core:slice"
 import "core:os"
