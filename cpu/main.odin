@@ -5,7 +5,7 @@ import "core:slice"
 import "core:os"
 
 main :: proc() {
-	data := os.read_entire_file("out/tests/instr_decode.bin", context.temp_allocator) or_else panic("failed to read file")
+	data := os.read_entire_file("private/bios_usj.bin", context.temp_allocator) or_else panic("failed to read file")
 	fmt.printf("%v\n", data)
 	
 	data_u32 := slice.reinterpret([]u32be, data)
@@ -13,14 +13,11 @@ main :: proc() {
 	
 	fmt.printf("Decoded: %v\n", instr_decode(transmute(u32be)data_u32[0]))
 	
-	block := jit_alloc_block(4096)
-	block.memory[0] = 0xB8
-	block.memory[1] = 0x11
-	block.memory[2] = 0x22
-	block.memory[3] = 0x33
-	block.memory[4] = 0x44
-	block.memory[5] = 0xC3
+	rt := jit_runtime_alloc(1024)
+	for i in 0..<6 {
+		jit_exec_instr(&rt, transmute(u32be)data_u32[i])
+	}
+	jit_runtime_dump_regs(&rt)
 	
-	result := jit_block_execute(&block, 0)
-	fmt.printf("Block exec result: %x\n", result)
+	fmt.printf("OK\n")
 }

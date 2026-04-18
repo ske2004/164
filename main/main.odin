@@ -12,6 +12,18 @@ import sapp "sokol:app"
 import sglue "sokol:glue"
 import sdtx "sokol:debugtext"
 
+USE_DEDICATED_GPU :: false
+
+when USE_DEDICATED_GPU {
+	@(rodata)
+	@(export)
+	NvOptimusEnablement : u32 = 0x00000001;
+	
+	@(rodata)
+	@(export)
+	AmdPowerXpressRequestHighPerformance : u32 = 0x00000001;
+}
+
 FONT_KC853 :: 0
 FONT_KC854 :: 1
 FONT_Z1013 :: 2
@@ -20,7 +32,7 @@ FONT_C64   :: 4
 FONT_ORIC  :: 5
 
 state: struct {
-pass_action: sg.Pass_Action,
+	pass_action: sg.Pass_Action,
 } = {
 	pass_action = {
 		colors = {
