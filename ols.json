@@ -2,8 +2,8 @@
   "$schema": "https://raw.githubusercontent.com/DanielGavin/ols/master/misc/ols.schema.json",
   "collections": [
     {
-      "name": "sokol",
-      "path": "sokol-odin/sokol"
+      "name": "src",
+      "path": "."
     }
   ],
   "enable_semantic_tokens": true,
