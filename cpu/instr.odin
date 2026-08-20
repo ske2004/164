@@ -47,6 +47,7 @@ g_instr_type_table := [OPCODE_COUNT]Instr_Type{
 	0x0D = .I, // ORI
 	0x0F = .I, // LUI
 	0x10 = .I, // MTC0
+	0x2B = .I, // SW
 }
 
 instr_decode :: proc(instr: u32be) -> Instr {

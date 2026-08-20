@@ -50,6 +50,16 @@ encode_ret :: proc(reg: Reg = 30) -> Piece {
 	return 0b1101011_0_0_10_11111_0000_0_0_00000_00000 | _reg_r(reg, 5)
 }
 
+// TODO: I'd add ORR since it's the same instruction but I can't be arsed right now.
+encode_blr :: proc(rd: Reg) -> Piece {
+	return 0b110_101_1_0_0_01_11111_0000_0_0_00000_00000 | _reg_r(rd, 5)
+}
+
+// TODO: I'd add ORR since it's the same instruction but I can't be arsed right now.
+encode_mov :: proc(sf: Sf, rd: Reg, rm: Reg) -> Piece {
+	return 0b0_01_01010_00_0_00000_000000_11111_00000 | _sf(sf) | _reg_r(rd, 0) | _reg_r(rm, 16)
+}
+
 encode_movz :: proc(sf: Sf, hw: Hw, rd: Reg, imm16: Imm16) -> Piece {
 	return 0b0_10_100101_00_0000000000000000_00000 | _sf(sf) | _hw(hw, 21) | _imm16(imm16, 5) | _reg_w(rd, 0)
 }
