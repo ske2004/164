@@ -1,0 +1,188 @@
+// Automatically convert encoding_list.txt to odin file
+// Format:
+//  name 1101011001011111000000xxxxxyyyyy x:Type:param1 y:Type:param2
+
+import (
+  "str_lib/str_split.um"
+  "std.um"
+)
+
+type (
+  Type = struct {
+    name: str
+    validatorFunctionName: str
+    bitWidth: int
+  }
+
+  Range = struct {
+    shiftLeft: int
+    bitWidth: int
+  }
+
+  Param = struct {
+    range: Range
+    name: str
+    typ: Type
+  }
+
+  Entry = struct {
+    functionName: str
+    mask: uint32
+    params: []Param
+  }
+)
+
+fn getTypeInfo(): map[str]Type {
+  return {
+    "RegR": { "Reg", "_reg_r", 5 },
+    "RegW": { "Reg", "_reg_w", 5 },
+    "Sf": { "Sf", "_sf", 1 },
+    "Hw": { "Hw", "_hw", 2 },
+    "Imm16": { "Imm16", "_imm16", 16 },
+    "Imm12": { "Imm12", "_imm12", 12 },
+    "Sh": { "Sh", "_sh", 1 },
+  }
+}
+
+lineInfo := 0
+
+fn encodeBinaryNumber(num: uint32): str {
+  result := ""
+  for i := 0; i < 32; i++ {
+    if (num >> i) & 1 == 1 { result = "1"+result
+    } else { result = "0"+result }
+  }
+
+  return result
+}
+
+fn error(msg: str) {
+  fprintf(std::stderr(), "Error at line %d: %s", lineInfo+1, msg)
+  exit(1)
+}
+
+fn lookupTypeInfo(id: str): Type {
+  typeInfo := getTypeInfo()
+
+  if !validkey(typeInfo, id) {
+    error("type doesn't exist")
+  }
+
+  return typeInfo[id]
+}
+
+fn parseMask(mask: str): (map[char]Range, uint32) {
+  if len(mask) != 32 {
+    error("instruction width must be 32")
+  }
+
+  monickers := map[char]Range{}
+  bitmask := uint32(0)
+
+  for i, c in mask {
+    bitmask <<= 1
+    if c == '1' {
+      bitmask |= 1
+    } else if c != '0' {
+      if !validkey(monickers, c) {
+        monickers[c] = { 31-i, 1 }
+      } else {
+        if monickers[c].shiftLeft - 1 != 31-i {
+          error(sprintf("monicker width must be consecutive %v", monickers[c]))
+        } else {
+          monickers[c].shiftLeft = 31-i
+          monickers[c].bitWidth += 1
+        }
+      }
+    }
+  }
+
+  return monickers, bitmask
+}
+
+fn parseParam(source: str, monickers: map[char]Range): Param {
+  pieces := str_split::splitByAnyChar(source, ":")
+  if len(pieces) != 3 {
+    error("invalid parameter syntax")
+  }
+
+  if len(pieces[0]) != 1 {
+    error("monicker length must be 1 char")
+  }
+
+  if !validkey(monickers, pieces[0][0]) {
+    error("non existent monicker")
+  }
+
+  range := monickers[pieces[0][0]]
+  typ := lookupTypeInfo(pieces[1])
+  if range.bitWidth != typ.bitWidth {
+    error("invalid bit width")
+  }
+
+  return Param {
+    range: range,
+    typ: typ,
+    name: pieces[2],
+  }
+}
+
+fn parseEntry(source: str): Entry {
+  pieces := str_split::splitByAnyChar(source, " \t")
+
+  monickers, mask := parseMask(pieces[1])
+
+  params := []Param{}
+
+  paramsPieces := slice(pieces, 2)
+
+  for i, piece in paramsPieces {
+    params = append(params, parseParam(piece, monickers))
+  }
+
+  return Entry {
+    functionName: pieces[0],
+    mask: mask,
+    params: params,
+  }
+}
+
+fn generateFunction(entry: Entry): str {
+  result := sprintf("encode_%s :: proc(", entry.functionName)
+  for i, param in entry.params {
+    result += sprintf("%s: %s", param.name, param.typ.name)
+    if i != len(entry.params) -1 {
+      result += ", "
+    }
+  }
+  result += ") -> Piece {\n"
+  result += sprintf("  return 0b%s", encodeBinaryNumber(entry.mask))
+  for i, param in entry.params {
+    result += sprintf(" | %s(%s, %d)", param.typ.validatorFunctionName, param.name, param.range.shiftLeft)
+  }
+  result += "\n}\n\n"
+
+  return result
+}
+
+fn main() {
+  file, err := std::fopen("cpu/arm64/encoding_list.txt", "rb")
+  std::exitif(err)
+
+  contents, err := std::freadall(file)
+  std::exitif(err)
+
+  splitted := str_split::splitByAnyChar(contents, "\n\r")
+
+  module := "package arm64\n\n"
+
+  for i, line in splitted {
+    lineInfo = i
+    module += generateFunction(parseEntry(line))
+  }
+
+  file, err = std::fopen("cpu/arm64/arm_encoder_instrs.odin", "wb")
+  std::exitif(err)
+  _, err := std::fwrite(file, []char(module))
+  std::exitif(err)
+}

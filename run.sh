@@ -4,6 +4,7 @@ if [ ! -e private/bios.bin ]; then
   echo "Warning: BIOS doesn't exist at private/bios.bin"
 fi
 
+umka scripts/arm64_encoding_list_convert.um
 armips tests/make.mips.s
 
 case "$1" in

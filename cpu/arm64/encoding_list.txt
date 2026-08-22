@@ -1,0 +1,7 @@
+ret          1101011001011111000000xxxxx00000 x:RegR:reg
+blr          1101011000111111000000xxxxx00000 x:RegR:rd
+mov          s0101010000xxxxx00000011111yyyyy s:Sf:sf x:RegR:rm y:RegW:rd
+movz         s10100101hhiiiiiiiiiiiiiiiixxxxx s:Sf:sf h:Hw:hw i:Imm16:imm16 x:RegW:rd
+str_imm_uns  1s11100100iiiiiiiiiiiixxxxxwwwww s:Sf:sf i:Imm12:imm12 x:RegR:rn w:RegW:rt
+ldr_imm_uns  1s11100101iiiiiiiiiiiixxxxxwwwww s:Sf:sf i:Imm12:imm12 x:RegR:rn w:RegW:rt
+sub          0s0100010hiiiiiiiiiiiixxxxxwwwww s:Sf:sf h:Sh:sh i:Imm12:imm12 x:RegR:rn w:RegR:rd

@@ -68,7 +68,7 @@ jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lpa
 
 	// assume msg < 16 bit, store into x1
 	// VM state already in x0, so we skip that
-	jit_emit_u32(w, arm64.encode_movz(.B64, 0, 1, arm64.Imm16(msg)))
+	jit_emit_u32(w, arm64.encode_movz(.B64, 0, arm64.Imm16(msg), 1))
 	jit_emit_u32(w, arm64.encode_blr(5)) // x5 contains the dispatch function
 
 	// Restore x0, x1 after callback
