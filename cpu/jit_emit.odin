@@ -23,9 +23,9 @@ jit_emit_begin :: proc() -> Jit_Emit {
 
 	// Prelude
 	// Save VM state + dispatch function + context
-	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+cast(int)+0, 0)
-	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+cast(int)+8, 1)
-	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+cast(int)+16, 2)
+	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+0, 0)
+	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+8, 1)
+	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+16, 2)
 
 	return w
 }
@@ -46,17 +46,17 @@ jit_emit_u32 :: proc(w: ^Jit_Emit, val: u32) {
 
 jit_emit_vm_writeback_64 :: proc(w: ^Jit_Emit, offs: int, rs: arm64.Reg) {
 	assert((offs >> 3 << 3) == offs, "Unaligned field")
-	jit_emit_u32(w, arm64.encode_str_imm_uns(.B64, arm64.Imm12(offs >> 3), 0, rs))
+	jit_emit_u32(w, arm64.encode_str_imm_uns(.B64, arm64.Imm(offs), 0, rs))
 }
 
 jit_emit_vm_readback_64 :: proc(w: ^Jit_Emit, offs: int, rd: arm64.Reg) {
 	assert((offs >> 3 << 3) == offs, "Unaligned field")
-	jit_emit_u32(w, arm64.encode_ldr_imm_uns(.B64, arm64.Imm12(offs >> 3), 0, rd))
+	jit_emit_u32(w, arm64.encode_ldr_imm_uns(.B64, arm64.Imm(offs), 0, rd))
 }
 
 jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lparam_reg: arm64.Reg) {
 	// Restore context into x3
-	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+cast(int)+8, 3)
+	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+8, 3)
 
 	// Move dispatch from x1 to x5
 	jit_emit_u32(w, arm64.encode_mov(.B64, 1, 5))
@@ -68,12 +68,12 @@ jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lpa
 
 	// assume msg < 16 bit, store into x1
 	// VM state already in x0, so we skip that
-	jit_emit_u32(w, arm64.encode_movz(.B64, 0, arm64.Imm16(msg), 1))
+	jit_emit_u32(w, arm64.encode_movz(.B64, 0, arm64.Imm(msg), 1))
 	jit_emit_u32(w, arm64.encode_blr(5)) // x5 contains the dispatch function
 
 	// Restore x0, x1 after callback
-	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+cast(int)+0, 0)
-	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+cast(int)+8, 1)
+	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+0, 0)
+	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+8, 1)
 }
 
 jit_emit_call_reg :: proc(w: ^Jit_Emit, )

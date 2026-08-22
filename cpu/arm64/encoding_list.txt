@@ -1,7 +1,6 @@
-ret          1101011001011111000000xxxxx00000 x:RegR:reg
-blr          1101011000111111000000xxxxx00000 x:RegR:rd
-mov          s0101010000xxxxx00000011111yyyyy s:Sf:sf x:RegR:rm y:RegW:rd
-movz         s10100101hhiiiiiiiiiiiiiiiixxxxx s:Sf:sf h:Hw:hw i:Imm16:imm16 x:RegW:rd
-str_imm_uns  1s11100100iiiiiiiiiiiixxxxxyyyyy s:Sf:sf i:Imm12:imm12 x:RegR:rn y:RegW:rt
-ldr_imm_uns  1s11100101iiiiiiiiiiiixxxxxyyyyy s:Sf:sf i:Imm12:imm12 x:RegR:rn y:RegW:rt
-sub          0s0100010hiiiiiiiiiiiixxxxxyyyyy s:Sf:sf h:Sh:sh i:Imm12:imm12 x:RegR:rn y:RegR:rd
+blr         $x         1101011000111111000000xxxxx00000 x:RegR:rd
+ldr_imm_uns $y,$i($x)  1s11100101iiiiiiiiiiiixxxxxyyyyy s:Sf:sf    i:Imm12*s:imm x:RegR:rn   y:RegW:rt
+mov         $y,$x      s0101010000xxxxx00000011111yyyyy s:Sf:sf    x:RegR:rm     y:RegW:rd
+movz        $x,$i<<$h  s10100101hhiiiiiiiiiiiiiiiixxxxx s:Sf:sf    h:Hw:hw       i:Imm16:imm x:RegW:rd
+ret         $x         1101011001011111000000xxxxx00000 x:RegR:reg
+str_imm_uns $y,$i($x)  1s11100100iiiiiiiiiiiixxxxxyyyyy s:Sf:sf    i:Imm12*s:imm x:RegR:rn   y:RegW:rt

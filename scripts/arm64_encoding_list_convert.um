@@ -19,7 +19,16 @@ type (
     bitWidth: int
   }
 
+  FormatPiece = struct {
+    varMonicker: char
+    string: str
+  }
+
+  Format = []FormatPiece
+
   Param = struct {
+    monicker: char
+    augmentMonicker: char
     range: Range
     name: str
     typ: Type
@@ -29,18 +38,19 @@ type (
     functionName: str
     mask: uint32
     params: []Param
+    format: Format
   }
 )
 
 fn getTypeInfo(): map[str]Type {
   return {
-    "RegR": { "Reg", "_reg_r", 5 },
-    "RegW": { "Reg", "_reg_w", 5 },
-    "Sf": { "Sf", "_sf", 1 },
-    "Hw": { "Hw", "_hw", 2 },
-    "Imm16": { "Imm16", "_imm16", 16 },
-    "Imm12": { "Imm12", "_imm12", 12 },
-    "Sh": { "Sh", "_sh", 1 },
+    "RegR":  { "Reg", "_reg_r",  5 },
+    "RegW":  { "Reg", "_reg_w",  5 },
+    "Sf":    { "Sf",  "_sf",     1 },
+    "Hw":    { "Hw",  "_hw",     2 },
+    "Imm16": { "Imm", "_imm16", 16 },
+    "Imm12": { "Imm", "_imm12", 12 },
+    "Sh":    { "Sh",  "_sh",     1 },
   }
 }
 
@@ -65,7 +75,7 @@ fn lookupTypeInfo(id: str): Type {
   typeInfo := getTypeInfo()
 
   if !validkey(typeInfo, id) {
-    error("type doesn't exist")
+    error("type "+id+" doesn't exist")
   }
 
   return typeInfo[id]
@@ -114,27 +124,64 @@ fn parseParam(source: str, monickers: map[char]Range): Param {
     error("non existent monicker")
   }
 
+  typeRef := str_split::splitByAnyChar(pieces[1], "*")
+  monicker := pieces[0][0]
+  augmentMonicker := char(0)
+  if len(typeRef) == 2 {
+    augmentMonicker = typeRef[1][0]
+  }
+
   range := monickers[pieces[0][0]]
-  typ := lookupTypeInfo(pieces[1])
+
+  typ := lookupTypeInfo(typeRef[0])
   if range.bitWidth != typ.bitWidth {
     error("invalid bit width")
   }
 
   return Param {
+    monicker: monicker,
+    augmentMonicker: augmentMonicker,
     range: range,
     typ: typ,
     name: pieces[2],
   }
 }
 
+fn parseFormatString(source: str): Format {
+  format := Format{}
+  piece := FormatPiece{}
+
+  for i := 0; i < len(source); i++ {
+    if source[i] == '$' {
+      if piece.string != "" {
+        format = append(format, piece)
+        piece = {}
+      }
+
+      format = append(format, FormatPiece{varMonicker: source[i+1]})
+      i++
+    } else {
+      piece.string += source[i]
+    }
+  }
+
+  if piece.string != "" {
+    format = append(format, piece)
+  }
+
+  return format
+}
+
 fn parseEntry(source: str): Entry {
   pieces := str_split::splitByAnyChar(source, " \t")
 
-  monickers, mask := parseMask(pieces[1])
+  format := parseFormatString(pieces[1])
+
+  monickers, mask := parseMask(pieces[2])
 
   params := []Param{}
 
-  paramsPieces := slice(pieces, 2)
+  paramsPieces := slice(pieces, 3)
 
   for i, piece in paramsPieces {
     params = append(params, parseParam(piece, monickers))
@@ -144,11 +191,21 @@ fn parseEntry(source: str): Entry {
     functionName: pieces[0],
     mask: mask,
     params: params,
+    format: format,
   }
 }
 
+fn findMonicker(entry: Entry, monicker: char): str {
+  for _, param in entry.params {
+    if param.monicker == monicker {
+      return param.name
+    }
+  }
+  return ""
+}
+
 fn generateFunction(entry: Entry): str {
-  result := sprintf("encode_%s :: proc(", entry.functionName)
+  result := sprintf("encode_%s :: #force_inline proc(", entry.functionName)
   for i, param in entry.params {
     result += sprintf("%s: %s", param.name, param.typ.name)
     if i != len(entry.params) -1 {
@@ -156,9 +213,29 @@ fn generateFunction(entry: Entry): str {
     }
   }
   result += ") -> Piece {\n"
+  result += sprintf("  fmt.printf(\"%s", entry.functionName)
+  for i, format in entry.format {
+    if format.varMonicker != '\0' {
+      result += " %v"
+    } else {
+      result += " "+format.string
+    }
+  }
+  result += sprintf("\\n\"")
+  for i, format in entry.format {
+    if format.varMonicker != '\0' {
+      result += sprintf(", %s", findMonicker(entry, format.varMonicker))
+    }
+  }
+  result += sprintf(")\n")
+
   result += sprintf("  return 0b%s", encodeBinaryNumber(entry.mask))
   for i, param in entry.params {
-    result += sprintf(" | %s(%s, %d)", param.typ.validatorFunctionName, param.name, param.range.shiftLeft)
+    if param.augmentMonicker != '\0' {
+      result += sprintf(" | %s(augment(%s, %s), %d)", param.typ.validatorFunctionName, param.name, findMonicker(entry, param.augmentMonicker), param.range.shiftLeft)
+    } else {
+      result += sprintf(" | %s(%s, %d)", param.typ.validatorFunctionName, param.name, param.range.shiftLeft)
+    }
   }
   result += "\n}\n\n"
 
@@ -174,7 +251,7 @@ fn main() {
 
   splitted := str_split::splitByAnyChar(contents, "\n\r")
 
-  module := "package arm64\n\n"
+  module := "package arm64\n\nimport \"core:fmt\"\n\n"
 
   for i, line in splitted {
     lineInfo = i
