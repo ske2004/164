@@ -59,12 +59,12 @@ jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lpa
 	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+cast(int)+8, 3)
 
 	// Move dispatch from x1 to x5
-	jit_emit_u32(w, arm64.encode_mov(.B64, 5, 1))
+	jit_emit_u32(w, arm64.encode_mov(.B64, 1, 5))
 
 	// Move wparam and lparam to x1 and x2 respectively
 	// TODO: assuming there's no register aliasing for now
-	jit_emit_u32(w, arm64.encode_mov(.B64, 2, wparam_reg))
-	jit_emit_u32(w, arm64.encode_mov(.B64, 3, lparam_reg))
+	jit_emit_u32(w, arm64.encode_mov(.B64, wparam_reg, 2))
+	jit_emit_u32(w, arm64.encode_mov(.B64, lparam_reg, 3))
 
 	// assume msg < 16 bit, store into x1
 	// VM state already in x0, so we skip that
