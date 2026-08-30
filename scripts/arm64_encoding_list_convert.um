@@ -44,13 +44,14 @@ type (
 
 fn getTypeInfo(): map[str]Type {
   return {
-    "RegR":  { "Reg", "_reg_r",  5 },
-    "RegW":  { "Reg", "_reg_w",  5 },
-    "Sf":    { "Sf",  "_sf",     1 },
-    "Hw":    { "Hw",  "_hw",     2 },
-    "Imm16": { "Imm", "_imm16", 16 },
-    "Imm12": { "Imm", "_imm12", 12 },
-    "Sh":    { "Sh",  "_sh",     1 },
+    "RegR":     { "Reg", "_reg_r",     5 },
+    "RegW":     { "Reg", "_reg_w",     5 },
+    "Sf":       { "Sf",  "_sf",        1 },
+    "Hw":       { "Hw",  "_hw",        2 },
+    "Imm16":    { "Imm", "_imm16",    16 },
+    "Imm12":    { "Imm", "_imm12",    12 },
+    "Simm7_16": { "Simm","_simm7_16",  7 }, // signed immediate 7 bits 16 byte aligned values only
+    "Sh":       { "Sh",  "_sh",        1 },
   }
 }
 
@@ -242,12 +243,13 @@ fn generateFunction(entry: Entry): str {
   return result
 }
 
-fn main() {
+fn main*() {
   file, err := std::fopen("cpu/arm64/encoding_list.txt", "rb")
   std::exitif(err)
 
   contents, err := std::freadall(file)
   std::exitif(err)
+  std::fclose(file)
 
   splitted := str_split::splitByAnyChar(contents, "\n\r")
 
@@ -262,4 +264,5 @@ fn main() {
   std::exitif(err)
   _, err := std::fwrite(file, []char(module))
   std::exitif(err)
+  std::fclose(file)
 }

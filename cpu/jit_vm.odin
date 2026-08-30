@@ -41,9 +41,8 @@ jit_vm_destroy :: proc() {
 
 }
 
-jit_vm_dispatch :: proc (vm: ^Vm, message: Vm_Dispatch_Msg, wparam: uint, lparam: uint) -> ! {
+jit_vm_dispatch :: proc (vm: ^Vm, message: Vm_Dispatch_Msg, wparam: uint, lparam: uint) {
 	fmt.printf("message: %v, wparam: %x, lparam: %x\n", message, wparam, lparam)
-	panic("Oops")
 }
 
 jit_vm_exec_wex :: proc(vm: ^Vm, block: ^Jit_Wex) {

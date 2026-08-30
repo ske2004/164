@@ -18,8 +18,9 @@ encoding_test :: proc(t: ^testing.T) {
 	verify(t, 0xD2824681, encode_movz(.B64, 0, 0x1234, 1))
 	verify(t, 0xD2C24682, encode_movz(.B64, 2, 0x1234, 2))
 	verify(t, 0xD2E24682, encode_movz(.B64, 3, 0x1234, 2))
-	verify(t, 0xF9000800, encode_str_imm_uns(.B64, 16, 0, 0))
-	verify(t, 0xB9001021, encode_str_imm_uns(.B32, 16, 1, 1))
-	verify(t, 0xF9400800, encode_ldr_imm_uns(.B64, 16, 0, 0))
-	verify(t, 0xB9401021, encode_ldr_imm_uns(.B32, 16, 1, 1))
+	verify(t, 0xF9000800, encode_str_iu(.B64, 16, 0, 0))
+	verify(t, 0xB9001021, encode_str_iu(.B32, 16, 1, 1))
+	verify(t, 0xF9400800, encode_ldr_iu(.B64, 16, 0, 0))
+	verify(t, 0xB9401021, encode_ldr_iu(.B32, 16, 1, 1))
+	verify(t, 0xA9BF7BFD, encode_stp_s(.B64, -16, 29, 30, 31))
 }

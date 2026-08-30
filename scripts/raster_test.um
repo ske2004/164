@@ -1,0 +1,124 @@
+import (
+  "std.um"
+)
+
+type PointI = struct { x, y: int }
+
+type Point = struct { x, y: real }
+
+type Tri = [3]Point
+
+type RasterTri = struct {
+  dm, dh, dl: real
+  ym, yh, yl: real
+  xm, xh, xl: real
+}
+
+fn slope(a, b: Point): real {
+  return (a.x - b.x) / (a.y - b.y)
+}
+
+fn (t: ^Tri) toCanonical(): Tri {
+  pts := []Point(t^) 
+
+  sort(pts, {
+    return a.y - b.y < 0 ? -1 : 1
+  })
+
+  return {pts[0], pts[1], pts[2]}
+}
+
+fn (t: ^Tri) toRaster(): RasterTri {
+  ct := t.toCanonical()
+
+  dm, dh, dl := slope(ct[0], ct[1]), slope(ct[2], ct[0]), slope(ct[1], ct[2])
+  ym, yh, yl := ct[1].y, ct[0].y, ct[2].y
+  xm, xh, xl := ct[0].x, ct[0].x, ct[1].x
+
+  rt := RasterTri{
+    dm, dh, dl,
+    ym, yh, yl,
+    xm, xh, xl,
+  }
+
+  printf("%v", rt)
+
+  return rt
+}
+
+fn scanline(tri: Tri, matrix: map[PointI]char) {
+  r := tri.toRaster()
+  xm, xh := r.xm, r.xh
+  dh, dm := r.dh, r.dm
+
+  y := floor(r.yh)
+  for y < ceil(r.ym) {
+    l, h := floor(xm), floor(xh)
+    
+    for l < h {
+      matrix[{l, y}] = '#'
+      l++
+    }
+ 
+    xm += dm
+    xh += dh
+
+    y++
+  }
+
+  dh, dm = r.dl, r.dm
+  if r.dl <= r.dh { dh, dm = r.dh, r.dl }
+
+  for y < ceil(r.yl) {
+    l, h := floor(xm), floor(xh)
+    
+    for l < h {
+      matrix[{l, y}] = '#'
+      l++
+    }
+ 
+    xm += dm
+    xh += dh
+
+    y++
+  }
+  
+}
+
+fn plotPPM(f: std::File, matrix: map[PointI]char) {
+  bbox := [2]PointI{{10000, 10000}, {0, 0}}
+  for p in matrix {
+    bbox[0].x = bbox[0].x < p.x ? bbox[0].x : p.x
+    bbox[0].y = bbox[0].y < p.y ? bbox[0].y : p.y
+    bbox[1].x = bbox[1].x > p.x ? bbox[1].x : p.x
+    bbox[1].y = bbox[1].y > p.y ? bbox[1].y : p.y
+  }
+
+  printf("%v", bbox)
+
+  fprintf(f, "P3\n%v %v\n255\n", bbox[1].x - bbox[0].x + 10, bbox[1].y - bbox[0].y + 10)
+
+  for y := bbox[0].y-5; y < bbox[1].y+5; y++ {
+    for x := bbox[0].x-5; x < bbox[1].x+5; x++ {
+      if validkey(matrix, PointI{x, y}) && matrix[PointI{x, y}] == '#' {
+        fprintf(f, "0 0 0\n")
+      } else {
+        fprintf(f, "255 255 255\n")
+      }
+    }
+  }
+}
+
+fn main() {
+  printf("%v\n", tri.toCanonical())
+  tri.toRaster()
+
+  matrix := map[PointI]char{}
+  
+  scanline(tri, matrix)
+
+  file, err := std::fopen("out/out.ppm", "wb")
+  std::exitif(err)
+  plotPPM(file, matrix)
+  std::fclose(file)
+}

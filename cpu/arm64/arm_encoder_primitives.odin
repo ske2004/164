@@ -1,5 +1,7 @@
 package arm64
 
+import "core:log"
+import "core:fmt"
 // part of instruction
 Piece :: u32
 
@@ -8,16 +10,17 @@ Sf  :: enum { B32, B64 }
 Sh  :: enum { Shift0, Shift12 }
 Hw  :: distinct int
 Imm :: distinct uint
+Simm :: distinct int
 
 @(private)
 _reg_r :: #force_inline proc(reg: Reg, shift: uint) -> Piece {
-	assert(reg >= 0 && reg <= 30 && shift < 31-5)
+	assert(reg >= 0 && reg <= 31 && shift < 31-5)
 	return Piece(reg)<<shift
 }
 
 @(private)
 _reg_w :: #force_inline proc(reg: Reg, shift: uint) -> Piece {
-	assert(reg >= 0 && reg <= 30 && shift < 32-5)
+	assert(reg >= 0 && reg <= 31 && shift < 32-5)
 	return Piece(reg)<<shift
 }
 
@@ -47,4 +50,14 @@ _imm16 :: #force_inline proc(imm16: Imm, shift: uint) -> Piece {
 _imm12 :: #force_inline proc(imm12: Imm, shift: uint) -> Piece {
 	assert(imm12 <= 0xFFF && shift < 32-12)
 	return Piece(imm12) << shift
+}
+
+@(private)
+_simm7_16 :: #force_inline proc(simm: Simm, shift: uint) -> Piece {
+	assert((simm & ~cast(Simm)0xF) == simm, "simm7_16 must be 16 byte aligned")
+	assert(simm <= 63 && simm >= -64)
+	v := (transmute(uint)(simm<<58))>>58
+	log.info("simm7_16: simm={} v={}", simm<<1)
+	
+	return Piece(v) << shift
 }

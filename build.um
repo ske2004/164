@@ -1,0 +1,39 @@
+import (
+  "scripts/args.um"
+  "scripts/arm64_encoding_list_convert.um"
+  "std.um"
+)
+
+const (
+  ODIN_FLAGS = "-collection:src=."
+)
+
+fn exec_program(program: str, args: str) {
+  if std::system("which " + program) != 0 {
+    std::exitif(std::error(1, program + " not found"))
+  }
+
+  if std::system(program + " " + args) != 0 {
+    std::exitif(std::error(1, "failed to execute " + program))
+  }
+}
+
+fn prereqs() {
+  exec_program("armips", "tests/make.mips.s")
+  arm64_encoding_list_convert::main()
+}
+
+fn main() {
+  args := args::mk("164build", "1.0.0", "crap", args::stdargv())
+  args.help() 
+
+  if args.mode("run") {
+    prereqs()
+    exec_program("odin", "run main "+ODIN_FLAGS)
+  } else if args.mode("test", "Run tests") {
+    prereqs()
+    exec_program("odin", "test main -all-packages "+ODIN_FLAGS)
+  } else {
+    args.usage()
+  }
+}
