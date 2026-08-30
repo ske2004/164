@@ -8,7 +8,6 @@ import "core:fmt"
 import "arm64"
 
 JIT_EMIT_DEFAULT_WEX_SIZE :: 1024
-JIT_TEMP_REG_START :: 6
 
 Jit_Emit :: struct {
 	wex: Jit_Wex,
@@ -53,6 +52,16 @@ jit_emit_vm_writeback_64 :: proc(w: ^Jit_Emit, offs: int, rs: arm64.Reg) {
 jit_emit_vm_readback_64 :: proc(w: ^Jit_Emit, offs: int, rd: arm64.Reg) {
 	assert((offs >> 3 << 3) == offs, "Unaligned field")
 	jit_emit_u32(w, arm64.encode_ldr_iu(.B64, arm64.Imm(offs), 0, rd))
+}
+
+jit_emit_vm_read_reg :: proc(w: ^Jit_Emit, reg: Reg, rd: arm64.Reg) {
+	assert(reg <= 31, "Invalid register")
+	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "gp_regs")+cast(int)reg*8, rd)
+}
+
+jit_emit_vm_write_reg :: proc(w: ^Jit_Emit, reg: Reg, rs: arm64.Reg) {
+	assert(reg <= 31, "Invalid register")
+	jit_emit_vm_writeback_64(w, cast(int)offset_of_by_string(Vm_State, "gp_regs")+cast(int)reg*8, rs)
 }
 
 jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lparam_reg: arm64.Reg) {

@@ -3,24 +3,26 @@ package cpu
 import "core:fmt"
 OPCODE_COUNT :: 1<<6
 
+Reg :: distinct uint
+
 InstrI :: bit_field u32 {
 	imm: u16  | 16,
-	rt:  u8   | 5,
-	rs:  u8   | 5,
-	op: u8    | 6
+	rt:  Reg  | 5,
+	rs:  Reg  | 5,
+	op:  u8   | 6
 }
 
 InstrJ :: bit_field u32 {
 	imm: u32  | 26,
-	op: u8    | 6
+	op:  u8   | 6
 }
 
 InstrR :: bit_field u32 {
 	funct: u8 | 6,
 	sa: u8    | 5, // shift amount
-	rd: u8    | 5,
-	rt: u8    | 5,
-	rs: u8    | 5,
+	rd: Reg   | 5,
+	rt: Reg   | 5,
+	rs: Reg   | 5,
 	op: u8    | 6,
 }
 
