@@ -44,14 +44,15 @@ type (
 
 fn getTypeInfo(): map[str]Type {
   return {
-    "RegR":     { "Reg", "_reg_r",     5 },
-    "RegW":     { "Reg", "_reg_w",     5 },
-    "Sf":       { "Sf",  "_sf",        1 },
-    "Hw":       { "Hw",  "_hw",        2 },
-    "Imm16":    { "Imm", "_imm16",    16 },
-    "Imm12":    { "Imm", "_imm12",    12 },
-    "Simm7":    { "Simm","_simm7",     7 }, // signed immediate 7 bits 16 byte aligned values only
-    "Sh":       { "Sh",  "_sh",        1 },
+    "RegR":     { "Reg",  "_reg_r",     5 },
+    "RegW":     { "Reg",  "_reg_w",     5 },
+    "RegWB":    { "Reg",  "_reg_w",     5 }, // todo special writeback handling
+    "Sf":       { "Sf",   "_sf",        1 },
+    "Hw":       { "Hw",   "_hw",        2 },
+    "Imm16":    { "Imm",  "_imm16",    16 },
+    "Imm12":    { "Imm",  "_imm12",    12 },
+    "Simm7":    { "Simm", "_simm7",     7 }, // signed immediate 7 bits 16 byte aligned values only
+    "Sh":       { "Sh",   "_sh",        1 },
   }
 }
 

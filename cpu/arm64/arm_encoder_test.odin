@@ -22,5 +22,6 @@ encoding_test :: proc(t: ^testing.T) {
 	verify(t, 0xB9001021, encode_str_iu(.B32, 16, 1, 1))
 	verify(t, 0xF9400800, encode_ldr_iu(.B64, 16, 0, 0))
 	verify(t, 0xB9401021, encode_ldr_iu(.B32, 16, 1, 1))
-	verify(t, 0xA9BF7BFD, encode_stp_s(.B64, -16, 29, 30, 31))
+	verify(t, 0xA9BF7BFD, encode_stp_x(.B64, -16, 29, 30, 31))
+	verify(t, 0xA8C17BFD, encode_ldp_y(.B64, 16, 29, 30, 31))
 }

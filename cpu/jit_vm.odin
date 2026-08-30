@@ -13,8 +13,6 @@ Vm_Dispatch_Msg :: enum {
 Vm_State :: struct {
 	gp_regs: [32]u64, // General Purpose Registers
 	fp_regs: [32]u64, // Floating Point Registers
-	// TODO: Just use the stack
-	temp: [8]u64
 }
 
 Vm :: struct {

@@ -22,10 +22,16 @@ jit_emit_begin :: proc() -> Jit_Emit {
 	}
 
 	// Prelude
-	// Save VM state + dispatch function + context
-	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+0, 0)
-	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+8, 1)
-	jit_emit_vm_writeback_64(&w, cast(int)offset_of_by_string(Vm_State, "temp")+16, 2)
+	{
+		// Save VM state + dispatch function + context
+		jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 0, 1, 31))
+		jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 2, 31, 31))
+		
+		// Save stack and lr
+		jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 29, 30, 31))
+		jit_emit_u32(&w, 0x910003FD)
+		
+	}
 
 	return w
 }
@@ -35,6 +41,7 @@ jit_emit_free :: proc(w: ^Jit_Emit) {
 }
 
 jit_emit_end :: proc(w: ^Jit_Emit) {
+	jit_emit_u32(w, arm64.encode_ldp_y(.B64, 48, 29, 30, 31))
 	jit_emit_u32(w, arm64.encode_ret(30))
 }
 
@@ -72,8 +79,8 @@ jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lpa
 	jit_emit_u32(w, arm64.encode_blr(5)) // x5 contains the dispatch function
 
 	// Restore x0, x1 after callback
-	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+0, 0)
-	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+8, 1)
+	jit_emit_u32(w, arm64.encode_ldp_s(.B64, 32, 0, 1, 31))
+	jit_emit_u32(w, arm64.encode_ldp_s(.B64, 16, 2, 31, 31))
 }
 
 jit_emit_call_reg :: proc(w: ^Jit_Emit, )
