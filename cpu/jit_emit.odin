@@ -21,17 +21,11 @@ jit_emit_begin :: proc() -> Jit_Emit {
 		idx = 0
 	}
 
-	// Prelude
-	{
-		// Save VM state + dispatch function + context
-		jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 0, 1, 31))
-		jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 2, 31, 31))
-		
-		// Save stack and lr
-		jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 29, 30, 31))
-		jit_emit_u32(&w, 0x910003FD)
-		
-	}
+	// Save VM state + dispatch function + context + stack + lr
+	jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 0, 1, 31))
+	jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 2, 31, 31))
+	jit_emit_u32(&w, arm64.encode_stp_x(.B64, -16, 29, 30, 31))
+	jit_emit_u32(&w, 0x910003FD)
 
 	return w
 }
@@ -62,9 +56,6 @@ jit_emit_vm_readback_64 :: proc(w: ^Jit_Emit, offs: int, rd: arm64.Reg) {
 }
 
 jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lparam_reg: arm64.Reg) {
-	// Restore context into x3
-	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "temp")+8, 3)
-
 	// Move dispatch from x1 to x5
 	jit_emit_u32(w, arm64.encode_mov(.B64, 1, 5))
 
