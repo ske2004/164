@@ -46,12 +46,12 @@ jit_emit_u32 :: proc(w: ^Jit_Emit, val: u32) {
 
 jit_emit_vm_writeback_64 :: proc(w: ^Jit_Emit, offs: int, rs: arm64.Reg) {
 	assert((offs >> 3 << 3) == offs, "Unaligned field")
-	jit_emit_u32(w, arm64.encode_str_imm_uns(.B64, arm64.Imm(offs), 0, rs))
+	jit_emit_u32(w, arm64.encode_str_iu(.B64, arm64.Imm(offs), 0, rs))
 }
 
 jit_emit_vm_readback_64 :: proc(w: ^Jit_Emit, offs: int, rd: arm64.Reg) {
 	assert((offs >> 3 << 3) == offs, "Unaligned field")
-	jit_emit_u32(w, arm64.encode_ldr_imm_uns(.B64, arm64.Imm(offs), 0, rd))
+	jit_emit_u32(w, arm64.encode_ldr_iu(.B64, arm64.Imm(offs), 0, rd))
 }
 
 jit_emit_vm_dispatch :: proc(w: ^Jit_Emit, msg: Vm_Dispatch_Msg, wparam_reg, lparam_reg: arm64.Reg) {

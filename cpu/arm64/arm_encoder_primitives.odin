@@ -14,7 +14,7 @@ Simm :: distinct int
 
 @(private)
 _reg_r :: #force_inline proc(reg: Reg, shift: uint) -> Piece {
-	assert(reg >= 0 && reg <= 31 && shift < 31-5)
+	assert(reg >= 0 && reg <= 31 && shift < 32-5)
 	return Piece(reg)<<shift
 }
 
@@ -26,11 +26,13 @@ _reg_w :: #force_inline proc(reg: Reg, shift: uint) -> Piece {
 
 @(private)
 _sf :: #force_inline proc(sf: Sf, shift: uint = 31) -> Piece {
+	assert(shift < 32)
 	return Piece(sf) << shift
 }
 
 @(private)
 _sh :: #force_inline proc(sh: Sh, shift: uint) -> Piece {
+	assert(shift < 32)
 	return Piece(sh) << shift
 }
 
@@ -53,11 +55,7 @@ _imm12 :: #force_inline proc(imm12: Imm, shift: uint) -> Piece {
 }
 
 @(private)
-_simm7_16 :: #force_inline proc(simm: Simm, shift: uint) -> Piece {
-	assert((simm & ~cast(Simm)0xF) == simm, "simm7_16 must be 16 byte aligned")
+_simm7 :: #force_inline proc(simm: Simm, shift: uint) -> Piece {
 	assert(simm <= 63 && simm >= -64)
-	v := (transmute(uint)(simm<<58))>>58
-	log.info("simm7_16: simm={} v={}", simm<<1)
-	
-	return Piece(v) << shift
+	return Piece(transmute(uint)(simm&0x7F)) << shift
 }

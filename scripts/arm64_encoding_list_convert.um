@@ -50,7 +50,7 @@ fn getTypeInfo(): map[str]Type {
     "Hw":       { "Hw",  "_hw",        2 },
     "Imm16":    { "Imm", "_imm16",    16 },
     "Imm12":    { "Imm", "_imm12",    12 },
-    "Simm7_16": { "Simm","_simm7_16",  7 }, // signed immediate 7 bits 16 byte aligned values only
+    "Simm7":    { "Simm","_simm7",     7 }, // signed immediate 7 bits 16 byte aligned values only
     "Sh":       { "Sh",  "_sh",        1 },
   }
 }
