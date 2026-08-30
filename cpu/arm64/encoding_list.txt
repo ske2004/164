@@ -10,3 +10,4 @@ stp_y  $x,$y,[$n+$i] s010100010iiiiiiiyyyyynnnnnxxxxx s:Sf:sf    i:Simm7*s:imm  
 ldp_y  $x,$y,[$n+$i] s010100011iiiiiiiyyyyynnnnnxxxxx s:Sf:sf    i:Simm7*s:imm    x:RegW:rt1     y:RegW:rt2     n:RegWB:rn
 stp_s  $x,$y,[$n+$i] s010100100iiiiiiiyyyyynnnnnxxxxx s:Sf:sf    i:Simm7*s:imm    x:RegR:rt1     y:RegR:rt2     n:RegR:rn
 ldp_s  $x,$y,[$n+$i] s010100101iiiiiiiyyyyynnnnnxxxxx s:Sf:sf    i:Simm7*s:imm    x:RegW:rt1     y:RegW:rt2     n:RegR:rn
+movk   $x,$i<<$h     s11100101hhiiiiiiiiiiiiiiiixxxxx s:Sf:sf    h:Hw:hw          i:Imm16:imm    x:RegW:rd
