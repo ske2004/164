@@ -1,0 +1,24 @@
+fn charInChars(char: char, chars: str): bool {
+  for i, c in chars { if c == char { return true } }
+  return false
+}
+
+fn splitByAnyChar*(source, chars: str): []str {
+  result := []str{}
+  head := 0
+
+  for i, char in source {
+    if charInChars(char, chars) {
+      if i - head > 0 {
+        result = append(result, slice(source, head, i))
+      }
+      head = i + 1
+    }
+  }
+
+  if len(source) - head > 0 {
+    result = append(result, slice(source, head, len(source)))
+  }
+
+  return result
+}

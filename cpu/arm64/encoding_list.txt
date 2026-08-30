@@ -1,0 +1,6 @@
+blr         $x         1101011000111111000000xxxxx00000 x:RegR:rd
+ldr_imm_uns $y,$i($x)  1s11100101iiiiiiiiiiiixxxxxyyyyy s:Sf:sf    i:Imm12*s:imm x:RegR:rn   y:RegW:rt
+mov         $y,$x      s0101010000xxxxx00000011111yyyyy s:Sf:sf    x:RegR:rm     y:RegW:rd
+movz        $x,$i<<$h  s10100101hhiiiiiiiiiiiiiiiixxxxx s:Sf:sf    h:Hw:hw       i:Imm16:imm x:RegW:rd
+ret         $x         1101011001011111000000xxxxx00000 x:RegR:reg
+str_imm_uns $y,$i($x)  1s11100100iiiiiiiiiiiixxxxxyyyyy s:Sf:sf    i:Imm12*s:imm x:RegR:rn   y:RegW:rt
