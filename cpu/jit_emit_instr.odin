@@ -9,6 +9,5 @@ jit_emit_lui :: proc(w: ^Jit_Emit, instr: InstrI) {
 jit_emit_sw :: proc(w: ^Jit_Emit, instr: InstrI) {
 	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "gp_regs")+cast(int)instr.rs*8, JIT_TEMP_REG_START)
 	jit_emit_vm_readback_64(w, cast(int)offset_of_by_string(Vm_State, "gp_regs")+cast(int)instr.rt*8, JIT_TEMP_REG_START+1)
-	// TODO: add the offset here
-	jit_emit_vm_dispatch(w, .Write32, JIT_TEMP_REG_START, JIT_TEMP_REG_START+1)
+	jit_emit_vm_dispatch(w, {.Write32, instr.imm}, JIT_TEMP_REG_START, JIT_TEMP_REG_START+1)
 }

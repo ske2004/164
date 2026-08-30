@@ -5,9 +5,14 @@ import "core:fmt"
 import "core:mem"
 import "core:slice"
 
-Vm_Dispatch_Msg :: enum {
+Vm_Dispatch_Msg_Type :: enum(u16) {
 	Read8, Read16, Read32,
 	Write8, Write16, Write32,
+}
+
+Vm_Dispatch_Msg :: struct {
+	type: Vm_Dispatch_Msg_Type,
+	value: u16,
 }
 
 Vm_State :: struct {
